@@ -1,0 +1,39 @@
+services:
+  nginx-service:
+    image: nginx:stable-alpine
+    container_name: nginx-container
+    ports:
+      - "8080:80"
+    volumes:
+      - ./app:/var/www/project
+      - ./default.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - php83-service
+      - postgresql-service
+    networks:
+      - nginx-php83-postgresql
+  php83-service:
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    container_name: php81-container
+    ports:
+      - "9000:9000"
+    volumes:
+      - ./app:/var/www/project
+    networks:
+      - nginx-php83-postgresql
+  postgresql-service:
+    image: postgres:13.3
+    environment:
+      POSTGRES_DB: "habrdb"
+      POSTGRES_USER: "habrpguser"
+      POSTGRES_PASSWORD: "pgpwd4habr"
+    ports:
+      - "5432:5432"
+    restart: always
+    networks:
+      - nginx-php83-postgresql
+networks:
+    nginx-php83-postgresql:
+        external: true
